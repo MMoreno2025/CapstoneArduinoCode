@@ -6,15 +6,30 @@
 const int rs=12, e=11, d4=5, d5=4, d6=3,d7=2;
 LiquidCrystal lcd(rs, e, d4, d5, d6, d7);   //standardise LCD screen//
 
+//weekend//
+String weekdays[] = {"Mon", "Tue", "Wed", "Thu", "Fri"};
+String weekend[] = {"Sat", "Sun"};
+
 void setup() {
   lcd.begin(16,2);  //my LCD screen size is 16x2 squres//
   lcd.print("Volts ---- Price");    //stationary print//
+
+  //set values of day & time - might need to put this in the loop for constant update, check after adding that one part//
+  String day="Mon";
+  double hour = 13;    //out of 24 hours//
 }
 
 void loop() {
   //make sensor for time//
-  
+  if(True){
+    lcd.setCursor(1,8);
+    lcd.print("y");
+  }else{
+    lcd.setCursor(1,8);
+    lcd.print("n");
+  }
 
+/*
   //display changing value of volts/amps (need figure out what ot measure)//
   lcd.setCursor(1,1);
   lcd.print(0.0);
@@ -22,4 +37,5 @@ void loop() {
   //displays price at a certain point in time//
   lcd.setCursor(12,1);
   lcd.print(millis()/1000);
+*/
 }
