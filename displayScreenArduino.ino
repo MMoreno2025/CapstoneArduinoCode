@@ -14,20 +14,38 @@ void setup() {
   lcd.begin(16,2);  //my LCD screen size is 16x2 squres//
   lcd.print("Volts ---- Price");    //stationary print//
 
-  //set values of day & time - might need to put this in the loop for constant update, check after adding that one part//
-  String day="Mon";
-  double hour = 13;    //out of 24 hours//
+  Serial.begin(9600);
 }
 
 void loop() {
+  //set values of day & time - might need to put this in the loop for constant update, check after adding that one part//
+  String day="Sat";
+  double hour = 13;    //out of 24 hours//
+  bool dayCheck = false;
+
+
+  for(int place = 4; place>=0; place--){
+    if(weekdays[place] == day){
+      dayCheck = true;
+    }else{
+      dayCheck = false;
+    }
+  }
+
   //make sensor for time//
-  if(True){
+  if(dayCheck==true){
+    
+
+    //change display on screen --> position 1, 8//
     lcd.setCursor(1,8);
     lcd.print("y");
   }else{
+
+    //change display on screen --> position 1, 8//
     lcd.setCursor(1,8);
     lcd.print("n");
   }
+
 
 /*
   //display changing value of volts/amps (need figure out what ot measure)//
