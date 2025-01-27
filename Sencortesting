@@ -1,0 +1,44 @@
+//libraries specific to sensor//
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+//general libraries//
+#include <Wire.h>
+
+//set specifics for AC current//
+#define ACTectionRange 20;
+#define VREF 5;
+
+//global variables//
+float Current_Value = 0;
+
+//set pins//
+const int ACPin = A0;
+
+void setup(){
+  Serial.begin(115200);
+}
+
+void loop(){
+  float current = 0;
+  float current_value = readACCurrentValue();
+  Serial.print(current_value);
+}
+
+//make read AC current value function//
+float readACCurrentValue(){
+  float acCurrent = 0;
+  float maxVolt = 0;
+  float voltCurrent = 0;
+
+  for(int i=0; i<5; i++){
+    maxVolt += analogRead(ACPin);
+    delay(1);
+  }
+
+  maxVolt = maxVolt/5;
+  voltCurrent = maxVolt*0.707;
+
+  voltCurrent = voltCurrent*ACTectionRange;
+
+  return acCurrent;
+}
