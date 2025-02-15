@@ -1,0 +1,43 @@
+#include <SPI.h>    //sensor library//
+#include <Wire.h>   
+#include <ZMPT101B.h>   //ZMPT101B library//
+#include <Adafruit_GFX.h>   //display screen (example video) libraries//
+#include <Adafruit_SSD1306.h>
+
+//constant variables//
+float correctionFactor = 6.5;
+float Current_Value = 0;
+
+const int ACPin = A0;
+#define ACTectionRange 20;    //set AC Current sensor with tection range 20A//
+#define VREF 5
+char watt[5];
+unsigned long last_time = 0;
+unsigned long current_time = 0;
+float Wh = 0;
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(ACPin, INPUT);
+  
+  delay(2000);
+}
+
+void loop() {
+  
+  float ACCurrentValue = 0;
+  float peakVoltage = 0;
+  float voltageVirtualValue = 0;
+  for(int i=0; i<5; i++){
+    peakVoltage += analogRead(ACPin);
+    peakVoltage = peakVoltage + correctionFactor;
+    delay(1);
+  }
+  peakVoltage = peakVoltage/5;
+  voltageVirtualValue = peakVoltage*0.707;
+  voltageVirtualValue = (voltageVirtualValue/1024*VREF)/2;
+  ACCurrentValue = voltageVirtualValue*ACTectionRange;
+
+  Serial.println(ACCurrentValue);
+  delay(1000);
+}
