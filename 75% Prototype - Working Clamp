@@ -1,12 +1,11 @@
 #include <SPI.h>    //sensor library//
 #include <Wire.h>   
 #include <ZMPT101B.h>   //ZMPT101B library//
-#include <Adafruit_GFX.h>   //display screen (example video) libraries//
-#include <Adafruit_SSD1306.h>
 
 //constant variables//
 float correctionFactor = 6.5;
 float Current_Value = 0;
+const int houseVolts = 120;
 
 const int ACPin = A0;
 #define ACTectionRange 20;    //set AC Current sensor with tection range 20A//
@@ -16,9 +15,16 @@ unsigned long last_time = 0;
 unsigned long current_time = 0;
 float Wh = 0;
 
+//define ZMPT101B//
+ZMPT101B voltageSensor(A1, 50.0);
+#define SENSITIVITY 500.0f
+
 void setup() {
   Serial.begin(115200);
   pinMode(ACPin, INPUT);
+
+  //use ZMPT101B//
+  voltageSensor.setSensitivity(SENSITIVITY);
   
   delay(2000);
 }
@@ -38,6 +44,27 @@ void loop() {
   voltageVirtualValue = (voltageVirtualValue/1024*VREF)/2;
   ACCurrentValue = voltageVirtualValue*ACTectionRange;
 
-  Serial.println(ACCurrentValue);
+  //calculate watts using volts//
+  float WtsAtTime = ACCurrentValue * houseVolts;
+  Serial.print(WtsAtTime);
+  Serial.println(" W");
+
+  //watts used total (since starting measurments) --> Aka KWH//
+  last_time = current_time;
+  current_time = millis();    
+  Wh = Wh+  (houseVolts*ACCurrentValue) *(( current_time -last_time) /3600000.0) ; 
+  dtostrf(Wh, 4, 2, watt);        
+  //Serial.write(watt);
+  //Serial.println();
+
+
+  //add ZMBT101B to this code//
+  /*
+  float acVoltage = voltageSensor.getRmsVoltage();
+  float power = acVoltage * ACCurrentValue;
+  Serial.println(acVoltage);
+  */
+
   delay(1000);
 }
+
