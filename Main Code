@@ -1,5 +1,6 @@
 #include <SPI.h>    //sensor library//
 #include <Wire.h>   
+#include <Arduino.h>    //allows for classese/functions to be made//
 #include <ZMPT101B.h>   //ZMPT101B library//
 
 //constant variables//
@@ -7,21 +8,28 @@ float correctionFactor = 6.5;
 float Current_Value = 0;
 const int houseVolts = 120;
 
-const int ACPin = A0;
+const int ACPin1 = A0;
+const int ACPin2 = A1;
+const int ACPin3 = A2;
+
 #define ACTectionRange 20;    //set AC Current sensor with tection range 20A//
 #define VREF 5
 char watt[5];
 unsigned long last_time = 0;
 unsigned long current_time = 0;
-float Wh = 0;
+float Kwh = 0;
 
-//define ZMPT101B//
-ZMPT101B voltageSensor(A1, 50.0);
-#define SENSITIVITY 500.0f
+//set arrays for pricing plan//
+float price;
+float pricing[] = {11.4, 42.9, 47.8};
+bool SuperOffP = false, OffP = false, OnP = false; 
 
 void setup() {
   Serial.begin(115200);
-  pinMode(ACPin, INPUT);
+  pinMode(ACPin1, INPUT);
+  pinMode(ACPin2, INPUT);
+  pinMode(ACPin3, INPUT);
+
 
   //use ZMPT101B//
   voltageSensor.setSensitivity(SENSITIVITY);
@@ -30,7 +38,32 @@ void setup() {
 }
 
 void loop() {
-  
+  //get watts being read by each sensor//
+  float wattsOne = findWatt(ACPin1);
+  float wattsTwo = findWatt(ACPin2);
+  float wattsThree = findWatt(ACPin3);
+  //calculate total watts used using these values//
+  float totalWattUsed = wattsOne + wattsTwo - wattsThree;
+
+  //Find KWtts | Kwh = (watts/1000)*hours | hours = sec -> hours since we are reading watts per second//
+  Kwh = (totalWattUsed/1000)*1800; 
+  Serial.println(Kwh);    
+
+  //find price or electricity at a specific time//
+  offP = true;
+  if(SuperOffP){
+    price = totalWattUsed * pricing[0];
+  }else if(OffP){
+    price = totalWattUsed * pricing[1];
+  }else if(OnP){
+    price = totalWattsUsed * pricing[2];
+  }
+
+
+  delay(1000);
+}
+
+float findWatt(int ACPin){
   float ACCurrentValue = 0;
   float peakVoltage = 0;
   float voltageVirtualValue = 0;
@@ -46,24 +79,6 @@ void loop() {
 
   //calculate watts using volts//
   float WtsAtTime = ACCurrentValue * houseVolts;
-  Serial.print(WtsAtTime);
-  Serial.println(" W");
 
-  //watts used total (since starting measurments) --> Aka KWH//
-  last_time = current_time;
-  current_time = millis();    
-  Wh = Wh+  (houseVolts*ACCurrentValue) *(( current_time -last_time) /3600000.0) ; 
-  dtostrf(Wh, 4, 2, watt);        
-  //Serial.write(watt);
-  //Serial.println();
-
-
-  //add ZMBT101B to this code//
-  /*
-  float acVoltage = voltageSensor.getRmsVoltage();
-  float power = acVoltage * ACCurrentValue;
-  Serial.println(acVoltage);
-  */
-
-  delay(1000);
+  return WtsAtTime;
 }
