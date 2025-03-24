@@ -19,10 +19,6 @@ unsigned long last_time = 0;
 unsigned long current_time = 0;
 float Kwh = 0;
 
-//set arrays for pricing plan//
-float price;
-float pricing[] = {11.4, 42.9, 47.8};
-bool SuperOffP = false, OffP = false, OnP = false; 
 
 void setup() {
   Serial.begin(115200);
@@ -32,12 +28,20 @@ void setup() {
 
 
   //use ZMPT101B//
-  voltageSensor.setSensitivity(SENSITIVITY);
+  //voltageSensor.setSensitivity(SENSITIVITY);
   
   delay(2000);
 }
 
 void loop() {
+  //set arrays for pricing plan//
+  float price;
+  float totPrice;
+  float pricing[] = {11.4, 42.9, 47.8};
+  bool SuperOffP = false;
+  bool OffP = false;
+  bool OnP = false; 
+
   //get watts being read by each sensor//
   float wattsOne = findWatt(ACPin1);
   float wattsTwo = findWatt(ACPin2);
@@ -47,18 +51,20 @@ void loop() {
 
   //Find KWtts | Kwh = (watts/1000)*hours | hours = sec -> hours since we are reading watts per second//
   Kwh = (totalWattUsed/1000)*1800; 
-  Serial.println(Kwh);    
+  //Serial.println(Kwh);  
+  Kwh = 1.5;  
 
   //find price or electricity at a specific time//
-  offP = true;
+  SuperOffP = true;
   if(SuperOffP){
-    price = totalWattUsed * pricing[0];
+    price = (Kwh * pricing[0])/60;
   }else if(OffP){
-    price = totalWattUsed * pricing[1];
+    price = (Kwh * pricing[1]/60);
   }else if(OnP){
-    price = totalWattsUsed * pricing[2];
+    price = (Kwh * pricing[2]/60);
   }
 
+  Serial.println((float)(Kwh * pricing[0])/(60.00*60.00));
 
   delay(1000);
 }
