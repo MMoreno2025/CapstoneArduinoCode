@@ -1,75 +1,58 @@
 #include <SPI.h>    //sensor library//
 #include <Wire.h>   
-#include <Arduino.h>    //allows for classese/functions to be made//
-#include <ZMPT101B.h>   //ZMPT101B library//
+#include <LiquidCrystal.h>
+
+//define all LCD screen exports aligned with Arduino import//
+const int rs=12, e=11, d4=5, d5=4, d6=3,d7=2;
+LiquidCrystal lcd(rs, e, d4, d5, d6, d7);   //standardise LCD screen//
 
 //constant variables//
 float correctionFactor = 6.5;
 float Current_Value = 0;
 const int houseVolts = 120;
 
-const int ACPin1 = A0;
+const int ACPin = A0;
 const int ACPin2 = A1;
-const int ACPin3 = A2;
 
 #define ACTectionRange 20;    //set AC Current sensor with tection range 20A//
 #define VREF 5
 char watt[5];
 unsigned long last_time = 0;
 unsigned long current_time = 0;
-float Kwh = 0;
-
+float Wh = 0;
 
 void setup() {
+  lcd.begin(16,2);  //my LCD screen size is 16x2 squres//
+  lcd.print("Volts:");    //stationary print//
+
   Serial.begin(115200);
-  pinMode(ACPin1, INPUT);
+  pinMode(ACPin, INPUT);
   pinMode(ACPin2, INPUT);
-  pinMode(ACPin3, INPUT);
-
-
-  //use ZMPT101B//
-  //voltageSensor.setSensitivity(SENSITIVITY);
   
   delay(2000);
 }
 
 void loop() {
-  //set arrays for pricing plan//
-  float price;
-  float totPrice;
-  float pricing[] = {11.4, 42.9, 47.8};
-  bool SuperOffP = false;
-  bool OffP = false;
-  bool OnP = false; 
+  /*
+  Serial.print("Pin 01: ");
+  Serial.println(findVolts(ACPin));
 
-  //get watts being read by each sensor//
-  float wattsOne = findWatt(ACPin1);
-  float wattsTwo = findWatt(ACPin2);
-  float wattsThree = findWatt(ACPin3);
-  //calculate total watts used using these values//
-  float totalWattUsed = wattsOne + wattsTwo - wattsThree;
+  Serial.print("Pin 02: ");
+  Serial.println(findVolts(ACPin2));
 
-  //Find KWtts | Kwh = (watts/1000)*hours | hours = sec -> hours since we are reading watts per second//
-  Kwh = (totalWattUsed/1000)*1800; 
-  //Serial.println(Kwh);  
-  Kwh = 1.5;  
+  Serial.println("\n\n");
 
-  //find price or electricity at a specific time//
-  SuperOffP = true;
-  if(SuperOffP){
-    price = (Kwh * pricing[0])/60;
-  }else if(OffP){
-    price = (Kwh * pricing[1]/60);
-  }else if(OnP){
-    price = (Kwh * pricing[2]/60);
-  }
+*/
+  Serial.print("Pin 01: ");
+  Serial.println(findVolts(ACPin));
 
-  Serial.println((float)(Kwh * pricing[0])/(60.00*60.00));
+  lcd.setCursor(1,1);
+  lcd.print(findVolts(ACPin));
 
   delay(1000);
 }
 
-float findWatt(int ACPin){
+float findVolts(int ACPin){
   float ACCurrentValue = 0;
   float peakVoltage = 0;
   float voltageVirtualValue = 0;
@@ -85,6 +68,5 @@ float findWatt(int ACPin){
 
   //calculate watts using volts//
   float WtsAtTime = ACCurrentValue * houseVolts;
-
-  return WtsAtTime;
+  return (WtsAtTime - 26.93);
 }
